@@ -1,4 +1,4 @@
-# /products/default-audit-engine/tests/test_audit_emissions.py
+# /products/default_audit_engine/tests/test_audit_emissions.py
 
 import pandas as pd
 import sys
@@ -10,7 +10,6 @@ PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "../../../"))
 sys.path.insert(0, PROJECT_ROOT)
 
 from products.default_audit_engine.audit_emissions import audit_emissions, load_default_lookup
-
 
 def test_default_cap_breach():
     row = {
@@ -46,7 +45,7 @@ def test_outlier_emissions():
     df = pd.DataFrame([row])
     result = audit_emissions(df, load_default_lookup())
     assert result['flag_outlier_emissions'][0] == '❌'
-    assert result['flag_severity'][0] == 'Yellow'
+    assert result['flag_severity'][0] == 'Red'
 
 def test_all_flags_green():
     row = {

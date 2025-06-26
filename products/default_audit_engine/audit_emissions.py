@@ -1,11 +1,16 @@
-# /products/default-audit-engine/audit_emissions.py
+# /products/default_audit_engine/audit_emissions.py
 
 import json
 import pandas as pd
 import os
 
 # Load EU default values from local JSON file
-def load_default_lookup(json_path="../../data/eu_cbam_default_values.json"):
+
+def load_default_lookup(json_path=None):
+    if json_path is None:
+        json_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../data/eu_cbam_default_values.json")
+        )
     if not os.path.exists(json_path):
         raise FileNotFoundError(f"Default values file not found: {json_path}")
     with open(json_path, 'r') as f:
