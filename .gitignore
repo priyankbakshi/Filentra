@@ -40,3 +40,5 @@ build/
 # repo comparison scratch files
 *_website_*.txt
 github_website_filtered.tx
+
+*_website_*.txt
