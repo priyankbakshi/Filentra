@@ -1,92 +1,82 @@
-# /products/default_audit_engine/audit_emissions.py
+#!/usr/bin/env python3
+"""
+Filentra CBAM Fallback-Audit Engine  –  v2025-07-11
+---------------------------------------------------
+Input : importer_enriched.csv   (must have default_* columns)
+Output: audited_results.xlsx (or .csv) with Green/Red flags
+"""
+from pathlib import Path
+import pandas as pd, yaml, sys
 
-import json
-import pandas as pd
-import os
+MAP_FILE = Path("cn_code_complexity_map.yaml")
+REQUIRED = {
+    "cn_code",
+    "declared_direct", "declared_indirect",
+    "default_direct",  "default_indirect",
+}
 
-# Load EU default values from local JSON file
+# ---------------- helpers --------------------------------------------------
+try:
+    raw_map = yaml.safe_load(MAP_FILE.read_text())
+    CN_MAP = {str(k): v for k, v in raw_map.items()}
+except yaml.YAMLError:
+    # If someone swaps to JSON, keep it working
+    import json
+    raw_map = json.loads(MAP_FILE.read_text())
+    CN_MAP = {str(k): v for k, v in raw_map.items()}
 
-def load_default_lookup(json_path=None):
-    if json_path is None:
-        json_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../data/eu_cbam_default_values.json")
-        )
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f"Default values file not found: {json_path}")
-    with open(json_path, 'r') as f:
-        return json.load(f)
+if "default" not in CN_MAP:
+    CN_MAP["default"] = "complex"
 
-def audit_emissions(df: pd.DataFrame, default_lookup: dict) -> pd.DataFrame:
-    flags = {
-        'flag_default_cap': [],
-        'flag_default_copy': [],
-        'flag_outlier_emissions': [],
-        'flag_severity': []
-    }
+def normalise(cn):                      # 4-digit root
+    d = "".join(filter(str.isdigit, str(cn)))
+    if len(d) not in (4, 6, 8):
+        raise ValueError(f"CN code ‘{cn}’ must be 4, 6 or 8 digits.")
+    return d[:4]
 
-    for _, row in df.iterrows():
-        cn = str(row['cn_code'])
-        direct = row.get('direct_emissions')
-        indirect = row.get('indirect_emissions')
-        fallback_pct = row.get('default_usage_percentage', 0)
+def complexity(root):                   # 'simple' / 'complex'
+    return CN_MAP.get(root, CN_MAP["default"])
 
-        default_vals = default_lookup.get(cn, {})
-        direct_default = default_vals.get('direct')
-        indirect_default = default_vals.get('indirect')
+def ratio(row):
+    tot = row.declared_direct + row.declared_indirect
+    if tot == 0:
+        # No declared emissions AND no defaults → ratio = 0
+        if row.default_direct + row.default_indirect == 0:
+            return 0.0
+        # Defaults present but no declared total (invalid data) → error
+        raise ZeroDivisionError(f"Declared emissions = 0 but defaults > 0 for {row.cn_code}")
+    return (row.default_direct + row.default_indirect) / tot
 
-        # Rule 1: Fallback cap
-        flag_cap = fallback_pct > 20
 
-        # Rule 2: Copy-paste detection (patched)
-        flag_copy = (
-            fallback_pct > 0 and (
-                (abs(direct - direct_default) < 0.001 if direct_default is not None and direct is not None else False) or
-                (abs(indirect - indirect_default) < 0.001 if indirect_default is not None and indirect is not None else False)
-            )
-        )
+def flag(row):
+    if row.complexity == "simple":
+        return "Red" if row.fallback_ratio > 0 else "Green"
+    return "Red" if row.fallback_ratio > 0.20 else "Green"
+# ---------------------------------------------------------------------------
 
-        # Rule 3: Outlier detection
-        flag_outlier = (
-            (direct_default and direct is not None and (direct >= 2 * direct_default or direct <= 0.5 * direct_default)) or
-            (indirect_default and indirect is not None and (indirect >= 2 * indirect_default or indirect <= 0.5 * indirect_default))
-        )
+def audit(inp: Path, out: Path):
+    df = pd.read_csv(inp) if inp.suffix == ".csv" else pd.read_excel(inp)
+    miss = REQUIRED - set(df.columns)
+    if miss:
+        sys.exit(f"Missing cols: {', '.join(miss)}")
 
-        # Aggregate severity
-        if flag_cap or (flag_copy and fallback_pct > 20) or flag_outlier:
-            severity = 'Red'
-        elif flag_copy or flag_outlier:
-            severity = 'Yellow'
-        else:
-            severity = 'Green'
+    df["cn_root_4d"]  = df.cn_code.apply(normalise)
+    df["complexity"]  = df.cn_root_4d.apply(complexity)
+    df["fallback_ratio"] = df.apply(ratio, axis=1)
+    df["fallback_ratio_%"] = (df.fallback_ratio*100).round(1)
+    df["Flag"] = df.apply(flag, axis=1)
 
-        flags['flag_default_cap'].append('❌' if flag_cap else '✅')
-        flags['flag_default_copy'].append('❌' if flag_copy else '✅')
-        flags['flag_outlier_emissions'].append('❌' if flag_outlier else '✅')
-        flags['flag_severity'].append(severity)
+    if out.suffix == ".csv":
+        df.to_csv(out, index=False)
+    else:
+        df.to_excel(out, index=False)
+    print(f"✅ QC file written → {out}")
 
-    for key in flags:
-        df[key] = flags[key]
-
-    return df
-
-# For CLI/local testing
 if __name__ == "__main__":
-    # Example usage
-    test_df = pd.DataFrame([
-        {
-            'cn_code': '25070080',
-            'direct_emissions': 0.23,
-            'indirect_emissions': 0.08,
-            'default_usage_percentage': 22.0
-        },
-        {
-            'cn_code': '25232100',
-            'direct_emissions': 2.4,
-            'indirect_emissions': 0.10,
-            'default_usage_percentage': 15.0
-        }
-    ])
-
-    defaults = load_default_lookup()
-    audited = audit_emissions(test_df, defaults)
-    print(audited)
+    import argparse, textwrap
+    p = argparse.ArgumentParser(description="CBAM fallback-cap audit")
+    p.add_argument("inp",  help="importer_enriched.csv/.xlsx")
+    p.add_argument("-o", "--out", required=True,
+                   help="audited_results.xlsx or .csv")
+    a = p.parse_args()
+    audit(Path(a.inp), Path(a.out))
