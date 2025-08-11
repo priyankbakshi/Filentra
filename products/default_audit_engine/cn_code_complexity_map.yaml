@@ -1,0 +1,4 @@
+# CN-code complexity lookup (4-digit headings)
+2601: simple      # sintered iron ore
+7601: simple      # unwrought aluminium
+default: complex  # everything else in iron/steel/aluminium is complex

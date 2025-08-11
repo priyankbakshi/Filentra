@@ -30,3 +30,9 @@ build/
 # IDE
 .vscode/
 .idea/
+# Keep specific assets & code even though parent folders are ignored
+!website/public/hero-visual.png
+!data/gleif/*.py
+# Keep specific assets & code even though parent folders are ignored
+!website/public/hero-visual.png
+!data/gleif/*.py
