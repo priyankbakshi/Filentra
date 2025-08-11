@@ -36,3 +36,7 @@ build/
 # Keep specific assets & code even though parent folders are ignored
 !website/public/hero-visual.png
 !data/gleif/*.py
+
+# repo comparison scratch files
+*_website_*.txt
+github_website_filtered.tx
