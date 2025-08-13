@@ -5,7 +5,6 @@ import ProblemSection from './sections/ProblemSection';
 import ServicesSection from './sections/ServicesSection';
 import ComparisonSection from './sections/ComparisonSection';
 import WhyFilentraSection from './sections/WhyFilentraSection';
-import UrgencySection from './sections/UrgencySection';
 import TestimonialsSection from './sections/TestimonialsSection';
 import Footer from './Footer';
 
@@ -18,7 +17,6 @@ const LandingPage = () => {
       <ServicesSection />
       <ComparisonSection />
       <WhyFilentraSection />
-      <UrgencySection />
       <TestimonialsSection />
       <Footer />
     </div>

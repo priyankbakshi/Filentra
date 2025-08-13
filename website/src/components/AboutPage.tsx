@@ -112,7 +112,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500">
+{/*      <section className="py-20 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-carbon-graphite mb-6">
             31 July CBAM deadline is approaching fast.
@@ -126,7 +126,7 @@ const AboutPage = () => {
           </button>
         </div>
       </section>
-
+*/}
       <Footer />
     </div>
   );

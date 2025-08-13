@@ -46,7 +46,9 @@ const Footer = () => {
               <p>Refund terms based on XML validation only</p>
             </div>
             <div className="text-gray-300 text-sm md:text-right">
-              <p>Stripe-secured payment</p>
+{/*            <p><a href="#" className="hover:underline">Privacy Policy</a> · <a href="#" className="hover:underline">Terms</a></p>
+*/}
+<p>Stripe-secured payment</p>
             </div>
           </div>
         </div>

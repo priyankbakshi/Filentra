@@ -44,7 +44,7 @@ const Navigation = () => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
+{/*            <button
               onClick={() => scrollToSection('services')}
               className={`hover:text-filentra-blue transition-colors ${
                 isScrolled ? 'text-carbon-graphite' : 'text-white'
@@ -52,6 +52,7 @@ const Navigation = () => {
             >
               Services
             </button>
+*/}
             <button
               onClick={() => scrollToSection('comparison')}
               className={`hover:text-filentra-blue transition-colors ${
@@ -83,7 +84,21 @@ const Navigation = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t shadow">
             <div className="px-4 pt-4 pb-3 space-y-2">
-              <button
+                            <Link
+                to="/for-importers"
+                className="block text-carbon-graphite hover:text-filentra-blue"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                For Importers
+              </Link>
+              <Link
+                to="/for-suppliers"
+                className="block text-carbon-graphite hover:text-filentra-blue"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                For Suppliers
+              </Link>
+<button
                 onClick={() => scrollToSection('services')}
                 className="block w-full text-left text-carbon-graphite hover:text-filentra-blue"
               >
