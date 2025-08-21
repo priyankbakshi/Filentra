@@ -1,2 +1,5 @@
 /pitch/*
-  Content-Security-Policy: default-src 'self' https://pitch.com https://*.pitch.com; frame-src https://pitch.com https://*.pitch.com; script-src 'self' 'unsafe-inline' https://pitch.com https://*.pitch.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://pitch.com https://*.pitch.com
+  Content-Security-Policy: default-src 'self' https://pitch.com https://*.pitch.com; frame-src https://pitch.com https://*.pitch.com; script-src 'self' 'unsafe-inline' https://pitch.com https://*.pitch.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://pitch.com https://*.pitch.com 
+
+/pitch/*
+  X-Robots-Tag: noindex, nofollow
